@@ -1,103 +1,194 @@
-const BIN_ID = "69c45d0cb7ec241ddca2e1e2";
+const BIN_ID = "69c45f3dc3097a1dd55dc851";
 const API_KEY = "$2a$10$o/pvgriM7eo1YnqkhuYdxOSndDugkOqYkDcC12nC4/tuSjW0gvDhW";
 
-let currentUser = localStorage.getItem("user");
+// ===== STATE =====
+let db = { users: [], posts: [] };
+let currentUser = JSON.parse(localStorage.getItem("taktak-user"));
 
-// UI
+// антиспам
+let timers = {
+  post: 0,
+  like: 0,
+  comment: 0
+};
+
+// ===== UI =====
 const auth = document.getElementById("auth");
 const mainUI = document.getElementById("mainUI");
-const loginBtn = document.getElementById("login");
 
+// ===== INIT =====
 if(currentUser){
   auth.classList.add("hidden");
   mainUI.classList.remove("hidden");
-  loadAndRender();
+  loadDB();
 }
 
-// Логин
-loginBtn.onclick = () => {
-  const nick = document.getElementById("nickname").value.trim();
-  if(!nick) return alert("Введите ник");
-  localStorage.setItem("user", nick);
-  location.reload();
-};
-
-// Получение постов
-async function loadPosts(){
+// ===== LOAD DB =====
+async function loadDB(){
   const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
     headers: { "X-Master-Key": API_KEY }
   });
 
   const data = await res.json();
-  return data.record.posts;
+  db = data.record;
+
+  render();
 }
 
-// Сохранение
-async function savePosts(posts){
+// ===== SAVE DB =====
+async function saveDB(){
   await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
     method:"PUT",
     headers:{
       "Content-Type":"application/json",
       "X-Master-Key": API_KEY
     },
-    body: JSON.stringify({ posts })
+    body: JSON.stringify(db)
   });
 }
 
-// Создание поста
+// ===== AUTH =====
+document.getElementById("login").onclick = () => {
+  const nick = document.getElementById("nickname").value.trim();
+  if(!nick) return alert("Введите ник");
+
+  let user = db.users.find(u => u.nick === nick);
+
+  if(!user){
+    user = {
+      id: Date.now(),
+      nick,
+      bio: "Новичок TakTak"
+    };
+    db.users.push(user);
+    saveDB();
+  }
+
+  localStorage.setItem("taktak-user", JSON.stringify(user));
+  location.reload();
+};
+
+// ===== CREATE POST =====
 document.getElementById("postBtn").onclick = async () => {
+  const now = Date.now();
+
+  if(now - timers.post < 5000){
+    return alert("Медленнее 😡");
+  }
+
   const text = document.getElementById("postInput").value.trim();
   if(!text) return;
 
-  let posts = await loadPosts();
+  timers.post = now;
 
-  posts.unshift({
-    author: currentUser,
+  db.posts.unshift({
+    id: Date.now(),
+    author: currentUser.nick,
     text,
-    date: Date.now(),
-    likes: 0
+    likes: 0,
+    comments: [],
+    date: now
   });
 
-  await savePosts(posts);
-
+  render();
   document.getElementById("postInput").value = "";
-  loadAndRender();
+
+  saveDB();
 };
 
-// Рендер
-async function loadAndRender(){
+// ===== RENDER =====
+function render(){
   const postsDiv = document.getElementById("posts");
-  postsDiv.innerHTML = "Загрузка...";
-
-  let posts = await loadPosts();
-
   postsDiv.innerHTML = "";
 
-  posts.forEach((p, i) => {
+  db.posts.forEach(post => {
     const div = document.createElement("div");
     div.className = "card post";
 
     div.innerHTML = `
-      <b>${p.author}</b>
-      <p>${p.text}</p>
+      <b>${post.author}</b>
+      <p>${post.text}</p>
+
       <div class="meta">
-        ❤️ <span data-i="${i}" class="like">${p.likes}</span>
-        • ${new Date(p.date).toLocaleString()}
+        <span class="like" data-id="${post.id}">❤️ ${post.likes}</span>
+        • ${new Date(post.date).toLocaleString()}
       </div>
+
+      <div class="comments">
+        ${post.comments.map(c => `
+          <div class="comment">
+            <b>${c.author}</b>: ${c.text}
+          </div>
+        `).join("")}
+      </div>
+
+      <input class="comment-input" placeholder="Комментарий..." data-id="${post.id}">
     `;
 
     postsDiv.appendChild(div);
   });
 
-  // лайки
-  document.querySelectorAll(".like").forEach(el => {
-    el.onclick = async () => {
-      let posts = await loadPosts();
-      const i = el.dataset.i;
-      posts[i].likes++;
+  // ===== ЛАЙК =====
+  document.querySelectorAll(".like").forEach(el=>{
+    el.onclick = ()=>{
+      const now = Date.now();
 
-      await savePosts(posts);
-      loadAndRender();
+      if(now - timers.like < 1000) return;
+      timers.like = now;
+
+      const id = Number(el.dataset.id);
+      const post = db.posts.find(p=>p.id===id);
+
+      const liked = JSON.parse(localStorage.getItem("liked")||"[]");
+
+      if(liked.includes(id)) return;
+
+      liked.push(id);
+      localStorage.setItem("liked", JSON.stringify(liked));
+
+      post.likes++;
+      render();
+      saveDB();
     };
   });
+
+  // ===== КОММЕНТ =====
+  document.querySelectorAll(".comment-input").forEach(input=>{
+    input.addEventListener("keydown", e=>{
+      if(e.key === "Enter"){
+        const now = Date.now();
+
+        if(now - timers.comment < 2000){
+          return alert("Не спамь комментариями");
+        }
+
+        const text = input.value.trim();
+        if(!text) return;
+
+        timers.comment = now;
+
+        const id = Number(input.dataset.id);
+        const post = db.posts.find(p=>p.id===id);
+
+        post.comments.push({
+          author: currentUser.nick,
+          text
+        });
+
+        input.value = "";
+
+        render();
+        saveDB();
+      }
+    });
+  });
 }
+
+// ===== ВАЙП (АДМИН) =====
+window.wipe = async function(){
+  if(prompt("Введи пароль") !== "admin123") return;
+
+  db = { users: [], posts: [] };
+  await saveDB();
+  location.reload();
+};
