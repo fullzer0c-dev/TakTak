@@ -9,18 +9,29 @@
 <body>
 <header>
   <h1>Cosmic Social</h1>
-  <p>Мини-соцсеть для разработчиков Roblox</p>
-  <a href="profile.html" class="button">Создать пост</a>
+  <p>Мини-соцсеть для разработчиков Roblox 🖤🤍</p>
 </header>
 
 <main>
-  <div id="post-list" class="post-grid"></div>
+  <div id="auth-container">
+    <h2>Регистрация / Вход</h2>
+    <input type="text" id="nickname" placeholder="Введите ник" required>
+    <button id="login-btn">Войти / Зарегистрироваться</button>
+  </div>
+
+  <div id="social-container" class="hidden">
+    <div id="new-post">
+      <textarea id="post-text" placeholder="Напишите пост..."></textarea>
+      <button id="post-btn">Опубликовать</button>
+    </div>
+    <div id="post-list"></div>
+  </div>
 </main>
 
 <footer>
-  <p>© 2026 Cosmic Social — черно-белая космическая стилистика</p>
+  <p>© 2026 Cosmic Social — черно-белый космический стиль</p>
 </footer>
 
-<script src="js/main.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
