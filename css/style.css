@@ -1,72 +1,138 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Фон */
 body {
-  margin:0;
-  background:#0a0a0a;
-  color:#fff;
-  font-family:system-ui;
+  background: radial-gradient(circle at top, #111 0%, #000 80%);
+  color: #fff;
 }
 
+/* Центровка */
 .app {
-  max-width:600px;
-  margin:auto;
+  max-width: 520px;
+  margin: 0 auto;
+  padding-bottom: 40px;
 }
 
+/* Хедер */
 .header {
-  padding:20px;
-  text-align:center;
-  font-size:24px;
-  border-bottom:1px solid #222;
+  position: sticky;
+  top: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #1f1f1f;
 }
 
+.header h1 {
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+/* Контент */
 .feed {
-  padding:15px;
+  padding: 16px;
 }
 
+/* Карточки */
 .card {
-  background:#111;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-  border:1px solid #222;
-  transition:0.2s;
+  background: linear-gradient(145deg, #0f0f0f, #0a0a0a);
+  border: 1px solid #1c1c1c;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
 }
 
 .card:hover {
-  border-color:#444;
+  border-color: #333;
+  transform: translateY(-2px);
 }
 
+/* Инпуты */
 textarea, input {
-  width:100%;
-  background:#0d0d0d;
-  border:1px solid #222;
-  border-radius:8px;
-  padding:10px;
-  color:#fff;
+  width: 100%;
+  border: 1px solid #222;
+  background: #050505;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  outline: none;
+  transition: 0.2s;
 }
 
+textarea:focus, input:focus {
+  border-color: #555;
+}
+
+/* Кнопка */
 button {
-  margin-top:10px;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#fff;
-  color:#000;
-  cursor:pointer;
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #fff, #ccc);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
 button:hover {
-  transform:scale(1.05);
+  transform: scale(1.03);
+  filter: brightness(1.1);
 }
 
+/* Пост */
 .post {
-  margin-bottom:10px;
+  animation: fadeIn 0.3s ease;
 }
 
+.post b {
+  font-size: 14px;
+}
+
+.post p {
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Метаданные */
 .meta {
-  font-size:12px;
-  color:#aaa;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
 }
 
+/* Лайк */
+.like {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.like:hover {
+  color: #fff;
+}
+
+/* Анимация */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Скрытие */
 .hidden {
-  display:none;
+  display: none;
 }
